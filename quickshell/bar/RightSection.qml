@@ -10,6 +10,7 @@ Item {
 
     required property var theme
     required property bool isDark
+    required property var notifServer
 
     implicitWidth: row.implicitWidth
     implicitHeight: 28
@@ -38,7 +39,7 @@ Item {
             }
         }
 
-        Sep { visible: SystemTray.items.length > 0 }
+        Sep {}
 
         // ── Volumen ──────────────────────────────────────────────
         Volume {
@@ -64,14 +65,33 @@ Item {
 
         Sep {}
 
-        // ── Indicador día/noche ──────────────────────────────────
+        // ── Toggle tema ──────────────────────────────────────────
         Text {
+            id: themeIcon
             text: rightSection.isDark ? "🌙" : "☀"
             font.pixelSize: 11
-            color: rightSection.isDark
-                ? rightSection.theme.blue
-                : rightSection.theme.yellow
+            color: themeHover.containsMouse
+                ? rightSection.theme.accent
+                : rightSection.isDark
+                    ? rightSection.theme.blue
+                    : rightSection.theme.yellow
             Layout.alignment: Qt.AlignVCenter
+
+            HoverHandler { id: themeHover }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: themeToggle.running = true
+            }
+
+            Process {
+                id: themeToggle
+                command: ["bash", "-c", rightSection.isDark
+                    ? "bash ~/.config/hypr/set-theme.sh light"
+                    : "bash ~/.config/hypr/set-theme.sh dark"]
+                running: false
+            }
         }
 
         Sep {}
@@ -82,7 +102,7 @@ Item {
             implicitHeight: 28
             Layout.alignment: Qt.AlignVCenter
 
-            property int notifCount: NotificationServer.trackedNotifications.values.length
+            property int notifCount: rightSection.notifServer.trackedNotifications.values.length
 
             Text {
                 id: bellIcon

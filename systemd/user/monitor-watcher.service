@@ -1,0 +1,14 @@
+[Unit]
+Description=Hyprland monitor hotplug watcher
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash %h/.config/hypr/monitor-watcher.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

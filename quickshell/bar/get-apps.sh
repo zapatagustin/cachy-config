@@ -3,7 +3,10 @@
 # Formato: "Nombre\tcomando"
 # Solo lee la seccion [Desktop Entry], igual que dmenu_run
 
-for dir in /usr/share/applications ~/.local/share/applications; do
+for dir in ~/.local/share/applications \
+           /usr/share/applications \
+           ~/.local/share/flatpak/exports/share/applications \
+           /var/lib/flatpak/exports/share/applications; do
     [ -d "$dir" ] || continue
     for f in "$dir"/*.desktop; do
         [ -f "$f" ] || continue
@@ -32,8 +35,9 @@ for dir in /usr/share/applications ~/.local/share/applications; do
             esac
         done < "$f"
         
-        # Limpiar argumentos %u %f etc
-        exec=$(echo "$exec" | sed 's/ %[uUfFdDnNickvm]//g' | sed "s/'%[uUfFdDnNickvm]'//g" | xargs)
+        # Limpiar argumentos %u %f etc y marcadores file-forwarding de flatpak (@@u ... @@)
+        exec=$(echo "$exec" | sed 's/ %[uUfFdDnNickvm]//g' | sed "s/'%[uUfFdDnNickvm]'//g" \
+            | sed 's/ @@u\?//g; s/ @@//g' | xargs)
         
         [ -n "$name" ] && [ -n "$exec" ] && [ -z "$nodisplay" ] && \
             echo -e "$name\t$exec"

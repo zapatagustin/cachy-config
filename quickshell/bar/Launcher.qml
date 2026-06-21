@@ -28,10 +28,14 @@ PanelWindow {
     property int selectedIndex: 0
     property bool loaded: false
 
+    // Cache del último listado válido — evita pantalla vacía mientras refresca
+    property var _allAppsCache: []
+
     // ── Cargar apps al inicio con el script (estilo dmenu_run) ────────────
     Component.onCompleted: reloadApps()
 
     function reloadApps() {
+        _allAppsCache = allApps.slice() // preservar antes de limpiar
         loaded = false
         allApps = []
         appLoader.running = true
@@ -63,12 +67,13 @@ PanelWindow {
 
     // ── Filtrar igual que dmenu: primero los que empiezan, luego contienen ─
     function filterApps() {
+        var source = allApps.length > 0 ? allApps : _allAppsCache
         var q = query.toLowerCase()
         if (q === "") {
-            filteredApps = allApps.slice()
+            filteredApps = source.slice()
         } else {
-            var starts   = allApps.filter(a =>  a.name.toLowerCase().startsWith(q))
-            var contains = allApps.filter(a => !a.name.toLowerCase().startsWith(q)
+            var starts   = source.filter(a =>  a.name.toLowerCase().startsWith(q))
+            var contains = source.filter(a => !a.name.toLowerCase().startsWith(q)
                                             &&  a.name.toLowerCase().includes(q))
             filteredApps = starts.concat(contains)
         }
@@ -79,13 +84,14 @@ PanelWindow {
         if (filteredApps.length === 0) return
         var cmd = filteredApps[selectedIndex].exec
         doHide()
-        Hyprland.dispatch("exec " + cmd)
+        // uwsm app -- lanza cada app en su propio systemd scope (cleanup ordenado)
+        Hyprland.dispatch("exec uwsm app -- " + cmd)
     }
 
     function doShow() {
+        reloadApps() // refresca en bg sin dejar la lista vacía
         query = ""
         searchInput.text = ""
-        filteredApps = allApps.slice()
         selectedIndex = 0
         open = true
         focusTimer.restart()

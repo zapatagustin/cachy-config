@@ -8,16 +8,26 @@ import QtQuick
 ShellRoot {
     id: root
 
-    // isDark: valor inicial por hora, luego controlado por set-theme.sh
-    property bool isDark: {
-        var h = new Date().getHours()
-        return (h < 7 || h >= 20)
+    property bool isDark: true
+
+    // Leer el tema actual al iniciar (Quickshell resetea isDark al reiniciar)
+    Process {
+        id: themeInit
+        command: ["sh", "-c", "cat /tmp/current-theme-mode 2>/dev/null"]
+        running: true
+        stdout: SplitParser {
+            onRead: (line) => {
+                var msg = line.trim()
+                if (msg === "light") root.isDark = false
+                if (msg === "dark")  root.isDark = true
+            }
+        }
     }
 
     // Escuchar cambios de tema desde set-theme.sh
     Process {
         id: themeWatcher
-        command: ["sh", "-c", "touch /tmp/qs-theme && tail -f /tmp/qs-theme"]
+        command: ["sh", "-c", "touch /tmp/qs-theme && tail -n 0 -f /tmp/qs-theme"]
         running: true
         stdout: SplitParser {
             onRead: (line) => {
@@ -44,12 +54,12 @@ ShellRoot {
         bg2:         "#504945",
         fg:          "#ebdbb2",
         fgDim:       "#a89984",
-        yellow:      "#d79921",
+        yellow:      "#fabd2f",
         blue:        "#83a598",
-        aqua:        "#689d6a",
-        accent:      "#d79921",
+        aqua:        "#8ec07c",
+        accent:      "#fabd2f",
         accentFg:    "#282828",
-        wsActive:    "#d79921",
+        wsActive:    "#fabd2f",
         wsOccupied:  "#504945",
         wsEmpty:     "transparent",
         wsActiveText:"#282828",
@@ -89,49 +99,62 @@ ShellRoot {
             screen: modelData
             theme: root.theme
             isDark: root.isDark
+            notifServer: notifSrv
         }
     }
 
-    NotificationServer { keepOnReload: true }
+    NotificationServer {
+        id: notifSrv
+        keepOnReload: true
+    }
 
     NotificationPopup {
         id: notifPopup
         theme: root.theme
+        notifServer: notifSrv
         screen: Quickshell.screens[0]
     }
 
     NotificationCenter {
         id: notifCenter
         theme: root.theme
+        notifServer: notifSrv
         screen: Quickshell.screens[0]
     }
 
-    PanelWindow {
-        screen: Quickshell.screens[0]
-        anchors.top: true
-        anchors.bottom: true
-        anchors.left: true
-        anchors.right: true
-        exclusiveZone: 0
-        visible: notifCenter.open
-        color: "transparent"
-        WlrLayershell.layer: WlrLayer.Top
+    Variants {
+        model: Quickshell.screens
+        PanelWindow {
+            required property var modelData
+            screen: modelData
+            anchors.top: true
+            anchors.bottom: true
+            anchors.left: true
+            anchors.right: true
+            exclusiveZone: 0
+            visible: notifCenter.open
+            color: "transparent"
+            WlrLayershell.layer: WlrLayer.Overlay
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: notifCenter.doHide()
+            MouseArea {
+                anchors.fill: parent
+                onClicked: notifCenter.doHide()
+            }
         }
     }
 
     Process {
         id: notifIpc
-        command: ["sh", "-c", "touch /tmp/qs-notif && tail -f /tmp/qs-notif"]
+        command: ["sh", "-c", "touch /tmp/qs-notif && tail -n 0 -f /tmp/qs-notif"]
         running: true
         stdout: SplitParser {
             onRead: (line) => {
                 if (line.trim() === "toggle") {
                     if (notifCenter.open) notifCenter.doHide()
-                    else notifCenter.doShow()
+                    else {
+                        notifCenter.screen = root.focusedScreen()
+                        notifCenter.doShow()
+                    }
                 }
             }
         }
@@ -143,6 +166,15 @@ ShellRoot {
         interval: 1000
         repeat: false
         onTriggered: notifIpc.running = true
+    }
+
+    function focusedScreen() {
+        var fm = Hyprland.focusedMonitor
+        if (!fm) return Quickshell.screens[0]
+        for (var i = 0; i < Quickshell.screens.length; i++) {
+            if (Quickshell.screens[i].name === fm.name) return Quickshell.screens[i]
+        }
+        return Quickshell.screens[0]
     }
 
     Launcher {
@@ -158,33 +190,40 @@ ShellRoot {
     }
 
     // Backdrop transparente para cerrar clipboard al clickear afuera
-    PanelWindow {
-        screen: Quickshell.screens[0]
-        anchors.top: true
-        anchors.bottom: true
-        anchors.left: true
-        anchors.right: true
-        exclusiveZone: 0
-        visible: clipViewer.open
-        color: "transparent"
-        WlrLayershell.layer: WlrLayer.Top
+    Variants {
+        model: Quickshell.screens
+        PanelWindow {
+            required property var modelData
+            screen: modelData
+            anchors.top: true
+            anchors.bottom: true
+            anchors.left: true
+            anchors.right: true
+            exclusiveZone: 0
+            visible: clipViewer.open
+            color: "transparent"
+            WlrLayershell.layer: WlrLayer.Overlay
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: clipViewer.doHide()
+            MouseArea {
+                anchors.fill: parent
+                onClicked: clipViewer.doHide()
+            }
         }
     }
 
     Process {
         id: ipcWatcher
-        command: ["sh", "-c", "touch /tmp/qs-launcher && tail -f /tmp/qs-launcher"]
+        command: ["sh", "-c", "touch /tmp/qs-launcher && tail -n 0 -f /tmp/qs-launcher"]
         running: true
         stdout: SplitParser {
             onRead: (line) => {
                 var msg = line.trim()
                 if (msg === "toggle") {
                     if (appLauncher.open) appLauncher.doHide()
-                    else appLauncher.doShow()
+                    else {
+                        appLauncher.screen = root.focusedScreen()
+                        appLauncher.doShow()
+                    }
                 }
             }
         }
@@ -202,14 +241,17 @@ ShellRoot {
 
     Process {
         id: clipboardIpc
-        command: ["sh", "-c", "touch /tmp/qs-clipboard && tail -f /tmp/qs-clipboard"]
+        command: ["sh", "-c", "touch /tmp/qs-clipboard && tail -n 0 -f /tmp/qs-clipboard"]
         running: true
         stdout: SplitParser {
             onRead: (line) => {
                 var msg = line.trim()
                 if (msg === "toggle") {
                     if (clipViewer.open) clipViewer.doHide()
-                    else clipViewer.doShow()
+                    else {
+                        clipViewer.screen = root.focusedScreen()
+                        clipViewer.doShow()
+                    }
                 }
             }
         }

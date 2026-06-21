@@ -41,10 +41,26 @@ Item {
         muteProcess.running = true
     }
 
-    Timer {
-        interval: 3000
+    // Event-driven: `pactl subscribe` emite una línea por cada cambio de sink
+    // (incluye las teclas XF86Audio*). Reemplaza el polling cada 3s → cero forks
+    // en idle, y la UI refleja el cambio al instante.
+    Process {
+        id: subscribeProc
+        command: ["sh", "-c", "pactl subscribe"]
         running: true
-        repeat: true
+        stdout: SplitParser {
+            // "Event 'change' on sink #N" → refrescar. "on sink-input #" NO matchea.
+            onRead: (line) => { if (line.indexOf("on sink #") !== -1) debounce.restart() }
+        }
+    }
+
+    // Coalesce ráfagas (mantener apretada la tecla de volumen dispara muchos
+    // eventos); refresca una sola vez 60ms después del último.
+    // ponytail: debounce fijo 60ms; subir si se siente laggy al soltar la tecla.
+    Timer {
+        id: debounce
+        interval: 60
+        repeat: false
         onTriggered: volume.refresh()
     }
 

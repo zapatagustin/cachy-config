@@ -1,30 +1,27 @@
 #!/bin/bash
-# set-theme.sh — cambia el tema del sistema según hora
-# Uso: set-theme.sh [dark|light|auto]
+# set-theme.sh — cambia el tema del sistema
+# Uso: set-theme.sh dark|light
 
-DARK_HOUR_START=20
-DARK_HOUR_END=7
-
-GTK_DARK="Gruvbox-Material-Dark"
-GTK_LIGHT="Adwaita"
+GTK_DARK="Gruvbox-Dark"
+GTK_LIGHT="Gruvbox-Light"
 ICON_DARK="Papirus-Dark"
 ICON_LIGHT="Papirus-Light"
 CURSOR_THEME="Adwaita"
 
 # ── Detectar modo ──────────────────────────────────────────────────────────
-MODE="${1:-auto}"
-if [ "$MODE" = "auto" ]; then
-    HOUR=$(date +%-H)
-    if [ "$HOUR" -ge "$DARK_HOUR_START" ] || [ "$HOUR" -lt "$DARK_HOUR_END" ]; then
-        MODE="dark"
-    else
-        MODE="light"
-    fi
+MODE="${1:-dark}"
+if [ "$MODE" != "dark" ] && [ "$MODE" != "light" ]; then
+    MODE="dark"
 fi
 
-# ── Salir si no cambió nada (cache) ───────────────────────────────────────
+# ── Cache: si no cambió nada, solo re-notificar a Quickshell y salir ───────
+# (Quickshell resetea isDark al reiniciar, así que siempre debe recibir el modo
+#  actual aunque el resto del sistema ya lo tenga aplicado)
 CACHE="/tmp/current-theme-mode"
-[ "$(cat "$CACHE" 2>/dev/null)" = "$MODE" ] && exit 0
+if [ "$(cat "$CACHE" 2>/dev/null)" = "$MODE" ]; then
+    echo "$MODE" > /tmp/qs-theme
+    exit 0
+fi
 echo "$MODE" > "$CACHE"
 
 # ── Seleccionar valores ────────────────────────────────────────────────────
@@ -33,7 +30,7 @@ if [ "$MODE" = "dark" ]; then
     ICON_THEME="$ICON_DARK"
     COLOR_SCHEME="prefer-dark"
     PREFER_DARK=1
-    BORDER_ACTIVE="rgba(d79921ff)"
+    BORDER_ACTIVE="rgba(fabd2fff)"
     BORDER_INACTIVE="rgba(504945ff)"
 else
     GTK_THEME="$GTK_LIGHT"

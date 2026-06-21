@@ -8,6 +8,7 @@ PanelWindow {
 
     required property var theme
     required property bool isDark
+    required property var notifServer
 
     anchors {
         top: true
@@ -18,6 +19,15 @@ PanelWindow {
     implicitHeight: 28
     color: "transparent"
     exclusiveZone: implicitHeight
+
+    // Monitor de Hyprland correspondiente a esta pantalla
+    readonly property var hyprMonitor: {
+        for (var i = 0; i < Hyprland.monitors.values.length; i++) {
+            if (Hyprland.monitors.values[i].name === bar.screen.name)
+                return Hyprland.monitors.values[i]
+        }
+        return null
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -40,6 +50,7 @@ PanelWindow {
             // ── IZQUIERDA: Workspaces + título ventana ─────────────
             Workspaces {
                 theme: bar.theme
+                monitor: bar.hyprMonitor
                 Layout.alignment: Qt.AlignVCenter
             }
 
@@ -61,10 +72,21 @@ PanelWindow {
             // Empuja la sección derecha al borde
             Item { Layout.fillWidth: true }
 
+            // Separador entre título y sección derecha
+            Rectangle {
+                width: 1
+                height: 14
+                color: bar.theme.sep
+                Layout.alignment: Qt.AlignVCenter
+                Layout.leftMargin: 4
+                Layout.rightMargin: 4
+            }
+
             // ── DERECHA: Vol + Bri + Bat + reloj ──────────────────
             RightSection {
                 theme: bar.theme
                 isDark: bar.isDark
+                notifServer: bar.notifServer
                 Layout.alignment: Qt.AlignVCenter
             }
         }

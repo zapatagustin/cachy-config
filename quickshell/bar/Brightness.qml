@@ -11,11 +11,23 @@ Item {
 
     property int percent: 100
 
+    // Refresh instantáneo: los binds de brillo (binds.conf) escriben en este
+    // pipe tras correr brightnessctl. sysfs no emite inotify confiable, por eso
+    // el push explícito en vez de polling agresivo.
+    Process {
+        running: true
+        command: ["sh", "-c", "touch /tmp/qs-brightness && tail -n 0 -f /tmp/qs-brightness"]
+        stdout: SplitParser { onRead: () => currentReader.reload() }
+    }
+
+    // Backstop lento: brillo puede cambiar fuera de las teclas (power-profiles,
+    // auto-brightness). FileView no spawnea proceso → barato. max_brightness es
+    // constante, se lee 1 sola vez en Component.onCompleted (#2).
     Timer {
-        interval: 5000
+        interval: 30000
         running: true
         repeat: true
-        onTriggered: { currentReader.reload(); maxReader.reload() }
+        onTriggered: currentReader.reload()
     }
 
     property int rawCurrent: 0

@@ -7,6 +7,7 @@ import Quickshell.Services.Notifications
 PanelWindow {
     id: popup
     required property var theme
+    required property var notifServer
 
     anchors.top: true
     anchors.right: true
@@ -17,21 +18,15 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
 
     property var current: null
-    property int prevCount: 0
 
     Connections {
-        target: NotificationServer
-        function onTrackedNotificationsChanged() {
-            var all = NotificationServer.trackedNotifications.values
-            if (all.length > popup.prevCount) {
-                popup.current = all[all.length - 1]
-                var timeout = popup.current.expireTimeout > 0
-                    ? popup.current.expireTimeout
-                    : 5000
-                dismissTimer.interval = timeout
-                dismissTimer.restart()
-            }
-            popup.prevCount = all.length
+        target: popup.notifServer
+        function onNotification(notif) {
+            notif.tracked = true
+            popup.current = notif
+            var timeout = notif.expireTimeout > 0 ? notif.expireTimeout : 5000
+            dismissTimer.interval = timeout
+            dismissTimer.restart()
         }
     }
 

@@ -21,7 +21,7 @@ PanelWindow {
     visible: open
     color: "transparent"
 
-    WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Overlay
 
     // ── Estado ────────────────────────────────────────────────────────────

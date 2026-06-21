@@ -8,6 +8,7 @@ import Quickshell.Services.Notifications
 PanelWindow {
     id: center
     required property var theme
+    required property var notifServer
 
     anchors.top: true
     anchors.right: true
@@ -17,13 +18,13 @@ PanelWindow {
     visible: open
     color: "transparent"
 
-    WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Overlay
 
     property bool open: false
     property int selectedIndex: 0
 
-    property var notifList: NotificationServer.trackedNotifications.values
+    property var notifList: center.notifServer.trackedNotifications.values
 
     function doShow() {
         open = true

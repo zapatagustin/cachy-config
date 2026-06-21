@@ -18,13 +18,15 @@ Item {
         return toplevel.title ?? ""
     }
 
-    implicitWidth: titleText.implicitWidth + 8
+    implicitWidth: Math.min(titleText.implicitWidth, 400) + 8
     implicitHeight: 28
 
     Text {
         id: titleText
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
+        width: Math.min(implicitWidth, 400)
+        elide: Text.ElideRight
 
         text: root.title
         color: root.theme.fg

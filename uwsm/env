@@ -1,0 +1,8 @@
+# Env vars de la sesión Wayland.
+# uwsm sourcea este archivo ANTES de lanzar Hyprland, así las vars quedan
+# disponibles para systemd user services + dbus desde el arranque (no tarde,
+# como pasa con `env =` de Hyprland).
+export XCURSOR_SIZE=24
+export HYPRCURSOR_SIZE=24
+export QT_QPA_PLATFORMTHEME=kde
+export QT_STYLE_OVERRIDE=breeze
