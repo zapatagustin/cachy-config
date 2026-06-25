@@ -1,0 +1,8 @@
+basedpyright-bin
+google-chrome
+google-cloud-cli
+nil-git
+nixd
+oh-my-bash-git
+stremio
+zapzap

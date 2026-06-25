@@ -1,0 +1,20 @@
+[credential "https://github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
+
+[includeIf "gitdir:/home/agustin/Projects/**/"]
+	path = ~/.gitconfig-personal
+
+[includeIf "gitdir:/home/agustin/git/**/"]
+	path = ~/.gitconfig-work
+
+[user]
+	name = zapatagustin
+	email = agustin.zapata@atlas.red
+[credential]
+	helper = store
+[includeif "gitdir:/home/agustin/work-org/**/"]
+	path = ~/.gitconfig-work
