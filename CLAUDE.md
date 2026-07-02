@@ -82,6 +82,13 @@ Hay dos implementaciones:
 | `ClipboardViewer.qml` | Historial clipboard (cliphist), pin/unpin, search, vim keybinds |
 | `get-apps.sh` | Parsea `.desktop` files → `Name\tcmd` |
 
+### `doom/` — Configuración de Doom Emacs
+
+Symlink de directorio: `~/.doom.d` → `doom/`. Contiene `config.el` (tema `doom-gruvbox`,
+fuente "Terminess Nerd Font" — paquete `ttf-terminus-nerd`), `init.el` y `packages.el`.
+Doom Emacs en sí (`~/.emacs.d`) lo clona `setup-desktop.sh`; no vive en este repo.
+Cambios en `config.el` solo requieren `doom/reload`, no `doom sync`.
+
 ## Comunicación IPC
 
 Hyprland y Quickshell se comunican via named pipes en `/tmp/`:

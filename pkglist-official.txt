@@ -239,6 +239,7 @@ ttf-dejavu
 ttf-liberation
 ttf-meslo-nerd
 ttf-opensans
+ttf-terminus-nerd
 typescript
 ufw
 ufw-extras

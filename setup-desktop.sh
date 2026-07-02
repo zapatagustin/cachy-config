@@ -80,6 +80,7 @@ link_dir() {
 link_dir "$REPO_DIR/hypr"          "$HOME/.config/hypr"
 link_dir "$REPO_DIR/quickshell"    "$HOME/.config/quickshell"
 link_dir "$REPO_DIR/systemd/user"  "$HOME/.config/systemd/user"
+link_dir "$REPO_DIR/doom"          "$HOME/.doom.d"
 
 mkdir -p "$HOME/.config/uwsm"
 [ -L "$HOME/.config/uwsm/env" ] && rm "$HOME/.config/uwsm/env"
@@ -98,6 +99,15 @@ cp "$REPO_DIR/dotfiles/gitconfig-work"       "$HOME/.gitconfig-work"
 mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
 cp "$REPO_DIR/dotfiles/gtk3-settings.ini"    "$HOME/.config/gtk-3.0/settings.ini"
 cp "$REPO_DIR/dotfiles/gtk4-settings.ini"    "$HOME/.config/gtk-4.0/settings.ini"
+
+# ── Doom Emacs ───────────────────────────────────────────────────────
+if [ ! -d "$HOME/.emacs.d" ]; then
+  info "Instalando Doom Emacs..."
+  git clone --depth 1 https://github.com/doomemacs/doomemacs "$HOME/.emacs.d"
+  "$HOME/.emacs.d/bin/doom" install --no-env --fonts
+else
+  warn "~/.emacs.d ya existe — corré 'doom sync' manual si hace falta"
+fi
 
 # ── Temas GTK Gruvbox ────────────────────────────────────────────────
 info "Instalando temas Gruvbox..."
