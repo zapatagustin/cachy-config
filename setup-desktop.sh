@@ -8,9 +8,14 @@ info()  { echo -e "${GREEN}==>${NC} $1"; }
 warn()  { echo -e "${YELLOW}==>${NC} $1"; }
 err()   { echo -e "${RED}==>${NC} $1"; }
 
-REPO_URL="https://github.com/agustintesore/cachy-config"
-REPO_DIR="$HOME/Projects/cachy-config"
+REPO_URL="https://github.com/zapatagustin/cachy-config"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+if [ -d "$SCRIPT_DIR/.git" ]; then
+  REPO_DIR="$SCRIPT_DIR"
+else
+  REPO_DIR="$HOME/Projects/cachy-config"
+fi
 
 # ── Detectar AUR helper ──────────────────────────────────────────────
 AUR_HELPER=""
