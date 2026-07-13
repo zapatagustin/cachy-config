@@ -6,6 +6,9 @@ Requisite=graphical-session.target
 
 [Service]
 Type=simple
+# Solo arranca bajo Hyprland (chequea $XDG_CURRENT_DESKTOP). Evita que se
+# levante en otras sesiones que comparten graphical-session.target (ej. KDE).
+ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "Hyprland" ""
 ExecStart=/usr/bin/hyprpaper
 Restart=on-failure
 RestartSec=1
