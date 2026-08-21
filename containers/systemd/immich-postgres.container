@@ -1,0 +1,24 @@
+[Unit]
+Description=Immich Postgres (VectorChord)
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image=ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+ContainerName=immich-postgres
+Network=immich.network
+EnvironmentFile=/home/desktop/.config/immich/db.env
+Environment=POSTGRES_INITDB_ARGS=--data-checksums
+Volume=immich-pgdata:/var/lib/postgresql/data
+ShmSize=128m
+LogDriver=journald
+
+[Service]
+# Relative scheduler priority, not a cap: under contention (a game) these
+# lose, but on an idle machine they still get every core.
+CPUWeight=20
+Restart=always
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target

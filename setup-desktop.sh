@@ -87,6 +87,12 @@ link_dir "$REPO_DIR/quickshell"    "$HOME/.config/quickshell"
 link_dir "$REPO_DIR/systemd/user"  "$HOME/.config/systemd/user"
 link_dir "$REPO_DIR/doom"          "$HOME/.doom.d"
 
+# Quadlets (podman rootless). El generador lee ~/.config/containers/systemd,
+# y sigue el symlink sin problema. Los secretos NO viven acá: los units usan
+# EnvironmentFile=~/.config/immich/db.env, que queda fuera del repo.
+mkdir -p "$HOME/.config/containers"
+link_dir "$REPO_DIR/containers/systemd" "$HOME/.config/containers/systemd"
+
 mkdir -p "$HOME/.config/uwsm"
 [ -L "$HOME/.config/uwsm/env" ] && rm "$HOME/.config/uwsm/env"
 [ -f "$HOME/.config/uwsm/env" ] && ! [ -L "$HOME/.config/uwsm/env" ] && \
@@ -131,6 +137,11 @@ systemctl --user daemon-reload
 for u in hyprpaper quickshell monitor-watcher; do
   systemctl --user enable "$u.service"
 done
+# syncthing runs headless (password vault sync) — enable-linger keeps the
+# user manager, and with it the unit, alive without a login session.
+systemctl --user enable syncthing.service
+sudo loginctl enable-linger "$USER"
+
 
 # ── Grupos ───────────────────────────────────────────────────────────
 info "Agregando usuario a grupos..."

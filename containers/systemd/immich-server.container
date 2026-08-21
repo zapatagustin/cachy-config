@@ -1,0 +1,40 @@
+[Unit]
+Description=Immich server
+Wants=network-online.target
+After=network-online.target immich-postgres.service immich-redis.service
+# The tailnet address published below does not exist until tailscaled has
+# configured tailscale0. The dependency on postgres/redis usually delays this
+# unit past that, but that is luck, not ordering: retry forever instead of
+# hitting the default 5-starts-in-10s limit and staying dead until a manual
+# restart.
+StartLimitIntervalSec=0
+Requires=immich-postgres.service immich-redis.service
+
+[Container]
+Image=ghcr.io/immich-app/immich-server:v3.1.0
+ContainerName=immich-server
+Network=immich.network
+# Tailnet address only, same reasoning as the searxng unit: ufw drops
+# everything not arriving on tailscale0, and rootless podman publishes
+# through a userspace forwarder without touching netfilter.
+PublishPort=100.74.140.82:2283:2283
+Volume=/mnt/datos/immich/library:/data:rw
+Volume=/etc/localtime:/etc/localtime:ro
+# VAAPI video transcoding on the discrete GPU. Machine learning stays on CPU.
+AddDevice=/dev/dri/renderD128
+EnvironmentFile=/home/desktop/.config/immich/db.env
+Environment=DB_HOSTNAME=immich-postgres
+Environment=REDIS_HOSTNAME=immich-redis
+Environment=TZ=America/Argentina/Buenos_Aires
+LogDriver=journald
+
+[Service]
+# Relative scheduler priority, not a cap: under contention (a game) these
+# lose, but on an idle machine they still get every core.
+CPUWeight=20
+Restart=always
+RestartSec=5
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=default.target

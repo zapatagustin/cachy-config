@@ -1,0 +1,25 @@
+[Unit]
+Description=Immich machine learning
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image=ghcr.io/immich-app/immich-machine-learning:v3.1.0
+# The server reaches this at http://immich-machine-learning:3003, a value
+# stored in the database rather than the environment, so the container name
+# has to match that default.
+ContainerName=immich-machine-learning
+Network=immich.network
+Volume=immich-model-cache:/cache
+LogDriver=journald
+
+[Service]
+# Relative scheduler priority, not a cap: under contention (a game) these
+# lose, but on an idle machine they still get every core.
+CPUWeight=20
+Restart=always
+# First start pulls a large image and then downloads the CLIP models.
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=default.target

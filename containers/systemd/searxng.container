@@ -1,0 +1,34 @@
+[Unit]
+Description=SearXNG metasearch engine
+Wants=network-online.target
+After=network-online.target
+# The tailnet address below does not exist until tailscaled has configured
+# tailscale0, which loses the boot race against this unit. Retry forever
+# instead of hitting the default 5-starts-in-10s limit and staying dead.
+StartLimitIntervalSec=0
+
+[Container]
+Image=docker.io/searxng/searxng:latest
+ContainerName=searxng
+# Tailnet address only. ufw already accepts everything arriving on tailscale0
+# and its default INPUT policy is DROP, so the LAN cannot reach this. That
+# holds because rootless podman publishes through a userspace forwarder and
+# never inserts its own netfilter rules -- docker would have bypassed ufw here.
+PublishPort=100.74.140.82:8888:8080
+PublishPort=127.0.0.1:8888:8080
+Volume=%h/searxng/config:/etc/searxng:rw
+Environment=SEARXNG_BASE_URL=http://desktop.taild4c79d.ts.net:8888/
+DropCapability=ALL
+AddCapability=CHOWN
+AddCapability=SETGID
+AddCapability=SETUID
+LogDriver=journald
+
+[Service]
+Restart=always
+RestartSec=5
+# First start pulls the image, which is slow on a cold cache.
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target
