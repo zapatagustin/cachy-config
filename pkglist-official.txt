@@ -119,6 +119,7 @@ kdeconnect
 kdegraphics-thumbnailers
 kdeplasma-addons
 kdialog
+keepassxc
 kinfocenter
 kio-admin
 kitty
@@ -228,6 +229,7 @@ sof-firmware
 spectacle
 speech-dispatcher
 sudo
+syncthing
 sysfsutils
 system-config-printer
 teams-for-linux
