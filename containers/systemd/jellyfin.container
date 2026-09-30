@@ -1,0 +1,40 @@
+[Unit]
+Description=Jellyfin media server
+Wants=network-online.target
+After=network-online.target
+# The tailnet address below does not exist until tailscaled has configured
+# tailscale0, which loses the boot race against this unit. Retry forever
+# instead of hitting the default 5-starts-in-10s limit and staying dead.
+StartLimitIntervalSec=0
+
+[Container]
+Image=docker.io/jellyfin/jellyfin:10.11.11
+ContainerName=jellyfin
+# Tailnet address only, same reasoning as the searxng unit: ufw drops
+# everything not arriving on tailscale0, and rootless podman publishes
+# through a userspace forwarder without touching netfilter.
+PublishPort=100.74.140.82:8096:8096
+PublishPort=127.0.0.1:8096:8096
+# Metadata and transcode scratch live on the data disk, not the SSD.
+Volume=/mnt/datos/jellyfin/config:/config:rw
+Volume=/mnt/datos/jellyfin/cache:/cache:rw
+# Media is read-only: Jellyfin never needs to modify the library.
+Volume=/mnt/datos/Videos:/media/videos:ro
+Volume=/mnt/datos/Torrents/series:/media/series:ro
+Volume=/etc/localtime:/etc/localtime:ro
+# VAAPI transcoding on the discrete GPU.
+AddDevice=/dev/dri/renderD128
+Environment=TZ=America/Argentina/Buenos_Aires
+LogDriver=journald
+
+[Service]
+# Relative scheduler priority, not a cap: under contention (a game) this
+# loses, but on an idle machine it still gets every core.
+CPUWeight=20
+Restart=always
+RestartSec=5
+# First start pulls the image, which is slow on a cold cache.
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target
