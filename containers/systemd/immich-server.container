@@ -26,6 +26,7 @@ EnvironmentFile=/home/desktop/.config/immich/db.env
 Environment=DB_HOSTNAME=immich-postgres
 Environment=REDIS_HOSTNAME=immich-redis
 Environment=TZ=America/Argentina/Buenos_Aires
+Environment=NODE_OPTIONS=--max-old-space-size=512
 LogDriver=journald
 
 [Service]
