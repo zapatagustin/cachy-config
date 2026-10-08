@@ -14,7 +14,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 if [ -d "$SCRIPT_DIR/.git" ]; then
   REPO_DIR="$SCRIPT_DIR"
 else
-  REPO_DIR="$HOME/Projects/cachy-config"
+  REPO_DIR="$HOME/Documents/Proyects/cachy-config"
 fi
 
 # ── Detectar AUR helper ──────────────────────────────────────────────
