@@ -1,0 +1,23 @@
+# Pi-hole + dnscrypt-proxy share this pod's network namespace, so Pi-hole
+# reaches its DoH upstream at 127.0.0.1:5053 with no bridge network involved
+# (rootless bridge networks have no outbound connectivity on this machine —
+# pasta-published pods/containers do).
+# Tailnet address only: ufw (DROP INPUT, tailscale0 trusted) applies because
+# pasta publishes through userspace into INPUT.
+[Pod]
+PodName=pihole
+PublishPort=100.74.140.82:53:53/tcp
+PublishPort=100.74.140.82:53:53/udp
+PublishPort=100.74.140.82:8081:80/tcp
+PublishPort=127.0.0.1:8081:80/tcp
+
+[Unit]
+# The tailnet address in PublishPort does not exist until tailscaled has
+# configured tailscale0, which loses the boot race against this unit. Retry
+# forever instead of hitting the default 5-starts-in-10s limit and staying
+# dead (same fix as searxng.container).
+StartLimitIntervalSec=0
+
+[Service]
+Restart=always
+RestartSec=5

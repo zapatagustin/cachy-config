@@ -1,0 +1,37 @@
+[Unit]
+Description=Pi-hole DNS sinkhole
+Wants=network-online.target dnscrypt-proxy.service
+After=network-online.target dnscrypt-proxy.service
+# The tailnet address published by the pod does not exist until tailscaled
+# has configured tailscale0, which loses the boot race. Retry forever instead
+# of hitting the default 5-starts-in-10s limit and staying dead.
+StartLimitIntervalSec=0
+
+[Container]
+Image=docker.io/pihole/pihole:latest
+ContainerName=pihole
+Pod=pihole.pod
+# Port publishing lives in pihole.pod. Binding host port 53 unprivileged
+# requires net.ipv4.ip_unprivileged_port_start=53
+# (/etc/sysctl.d/99-pihole-port53.conf).
+Volume=%h/pihole/etc-pihole:/etc/pihole:rw
+Environment=TZ=America/Argentina/Buenos_Aires
+# dnscrypt-proxy in the same pod = same network namespace = real localhost.
+Environment=FTLCONF_dns_upstreams=127.0.0.1#5053
+Environment=FTLCONF_dns_listeningMode=all
+Environment=FTLCONF_dns_dnssec=true
+# Admin password lives outside git/quadlet. Set
+#   FTLCONF_webserver_api_password=<password>
+# in ~/pihole/pihole.env. Empty file = Pi-hole generates a random one
+# (visible in `podman logs pihole`).
+EnvironmentFile=%h/pihole/pihole.env
+AutoUpdate=registry
+LogDriver=journald
+
+[Service]
+Restart=always
+RestartSec=5
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target

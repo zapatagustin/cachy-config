@@ -3,3 +3,7 @@ Description=Immich container network
 
 [Network]
 NetworkName=immich
+
+# Containers cannot reach the host systemd-resolved stub (127.0.0.53), so
+# external DNS goes through Pi-hole on the host tailscale IP.
+DNS=100.74.140.82

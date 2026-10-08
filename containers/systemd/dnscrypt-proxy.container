@@ -1,0 +1,21 @@
+[Unit]
+Description=dnscrypt-proxy DoH upstream for Pi-hole
+StartLimitIntervalSec=0
+
+[Container]
+Image=docker.io/klutchell/dnscrypt-proxy:latest
+ContainerName=dnscrypt-proxy
+Pod=pihole.pod
+# Replaces cloudflared, whose proxy-dns feature was removed in 2026.2.0.
+# Default image config: listens on :5053, forwards to Cloudflare over DoH.
+# Not published by the pod: only reachable inside the shared namespace.
+AutoUpdate=registry
+LogDriver=journald
+
+[Service]
+Restart=always
+RestartSec=5
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target
